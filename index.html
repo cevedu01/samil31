@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>나만의 여행 계획기</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6a0572;
+            /* 보라색 계열 */
+            --secondary-color: #ab47bc;
+            /* 더 밝은 보라색 */
+            --accent-color: #ffee58;
+            /* 노란색 계열 (강조) */
+            --background-color: #f3e5f5;
+            /* 연한 보라색 배경 */
+            --card-background: #ffffff;
+            --text-color: #333333;
+            --light-text-color: #666666;
+            --border-color: #e0e0e0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: var(--card-background);
+            border-radius: 12px;
+            box-shadow: 0 8px 20px var(--shadow-color);
+            padding: 30px;
+            width: 100%;
+            max-width: 1000px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+
+        h1,
+        h2 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+
+        .input-section,
+        .output-section,
+        .saved-plans-section {
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: calc(100% - 20px);
+            padding: 12px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            color: var(--text-color);
+            box-sizing: border-box;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(171, 71, 188, 0.2);
+            outline: none;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            font-weight: 600;
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .loading-spinner {
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 10px;
+            display: none;
+            /* 기본적으로 숨김 */
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .output-content {
+            background-color: var(--background-color);
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 150px;
+            border: 1px dashed var(--secondary-color);
+        }
+
+        .output-content h3 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .output-content ul {
+            list-style-type: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+
+        .output-content li {
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease;
+        }
+
+        .output-content li:hover {
+            transform: translateY(-3px);
+        }
+
+        .saved-plans-list {
+            list-style-type: none;
+            padding: 0;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--background-color);
+            padding: 10px;
+        }
+
+        .saved-plans-list li {
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .saved-plans-list li:hover {
+            background-color: #f5f5f5;
+            transform: translateY(-2px);
+        }
+
+        .saved-plans-list li span {
+            font-weight: 500;
+            color: var(--light-text-color);
+        }
+
+        .saved-plans-list li .plan-title {
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .error-message {
+            color: #d32f2f;
+            background-color: #ffebee;
+            border: 1px solid #ef9a9a;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+            /* 기본적으로 숨김 */
+        }
+
+        .info-message {
+            color: #0d47a1;
+            background-color: #e3f2fd;
+            border: 1px solid #90caf9;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+            /* 기본적으로 숨김 */
+        }
+
+        /* 모바일 반응형 */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .button-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            button {
+                width: 100%;
+                padding: 10px 0;
+            }
+
+            input[type="text"],
+            input[type="number"],
+            select {
+                width: calc(100% - 20px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>✈️ 나만의 여행 계획기</h1>
+        <div class="input-section">
+            <h2>여행 정보 입력</h2>
+            <div class="form-group">
+                <label for="destination">여행할 나라/지역/도시:</label>
+                <input type="text" id="destination" placeholder="예: 파리, 제주도, 뉴욕" required>
+            </div>
+            <div class="form-group">
+                <label for="adults">성인 인원수:</label>
+                <input type="number" id="adults" min="1" value="1" required>
+            </div>
+            <div class="form-group">
+                <label for="children">아이 인원수:</label>
+                <input type="number" id="children" min="0" value="0">
+            </div>
+            <div class="form-group">
+                <label for="travelStyle">여행 스타일:</label>
+                <select id="travelStyle" required>
+                    <option value="">선택하세요</option>
+                    <option value="관광">관광</option>
+                    <option value="휴양">휴양</option>
+                    <option value="커플여행">커플여행</option>
+                    <option value="가족여행">가족여행</option>
+                    <option value="모험">모험</option>
+                    <option value="문화 탐방">문화 탐방</option>
+                    <option value="미식 여행">미식 여행</option>
+                    <option value="쇼핑">쇼핑</option>
+                    <option value="자연">자연</option>
+                    <option value="역사">역사</option>
+                    <option value="액티비티">액티비티</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="travelDays">여행 일수:</label>
+                <select id="travelDays" required>
+                    <option value="">선택하세요</option>
+                    <script>
+                        for (let i = 1; i <= 7; i++) {
+                            document.write(`<option value="${i}일">${i}일</option>`);
+                        }
+                    </script>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="budget">예산:</label>
+                <select id="budget" required>
+                    <option value="">선택하세요</option>
+                    <option value="100만원">100만원</option>
+                    <option value="200만원">200만원</option>
+                    <option value="300만원">300만원</option>
+                    <option value="직접 입력">직접 입력</option>
+                </select>
+                <input type="text" id="customBudget" placeholder="예산 직접 입력" style="display: none; margin-top: 10px;">
+            </div>
+            <div class="button-group">
+                <button id="recommendBtn">여행 계획 추천 <span class="loading-spinner" id="recommendSpinner"></span></button>
+                <button id="saveBtn" disabled>기록하기 (저장)</button>
+            </div>
+            <div class="error-message" id="errorMessage"></div>
+            <div class="info-message" id="infoMessage"></div>
+        </div>
+
+        <hr>
+
+        <div class="output-section">
+            <h2>생성된 여행 계획</h2>
+            <div class="output-content" id="travelPlanOutput">
+                <p>상단의 정보를 입력하고 "여행 계획 추천" 버튼을 눌러보세요!</p>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="saved-plans-section">
+            <h2>내 저장된 여행 계획 목록</h2>
+            <ul class="saved-plans-list" id="savedPlansList">
+                <p style="text-align: center; color: var(--light-text-color);">저장된 여행 계획이 없습니다.</p>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 경고: 이 API 키는 클라이언트 측에 노출됩니다.
+        // 실제 프로덕션 환경에서는 절대 이렇게 사용하지 마세요!
+        // 서버리스 함수(e.g., Google Cloud Functions) 등을 사용하여 백엔드에서 API 호출을 처리해야 합니다.
+        const GEMINI_API_KEY = "AIzaSyBHJDe1RVjzk0EwvwTxbAVMmYAH7iXZCw"; // 여기에 실제 Gemini API 키를 넣어주세요.
+        const MODEL_NAME = "gemini-1.5-flash";
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const destinationInput = document.getElementById('destination');
+            const adultsInput = document.getElementById('adults');
+            const childrenInput = document.getElementById('children');
+            const travelStyleSelect = document.getElementById('travelStyle');
+            const travelDaysSelect = document.getElementById('travelDays');
+            const budgetSelect = document.getElementById('budget');
+            const customBudgetInput = document.getElementById('customBudget');
+            const recommendBtn = document.getElementById('recommendBtn');
+            const saveBtn = document.getElementById('saveBtn');
+            const travelPlanOutput = document.getElementById('travelPlanOutput');
+            const savedPlansList = document.getElementById('savedPlansList');
+            const errorMessageDiv = document.getElementById('errorMessage');
+            const infoMessageDiv = document.getElementById('infoMessage');
+            const recommendSpinner = document.getElementById('recommendSpinner');
+
+            let currentGeneratedPlan = null; // Gemini API로부터 받은 현재 계획 저장
+
+            // 예산 '직접 입력' 선택 시 텍스트 필드 활성화
+            budgetSelect.addEventListener('change', function () {
+                if (this.value === '직접 입력') {
+                    customBudgetInput.style.display = 'block';
+                    customBudgetInput.setAttribute('required', 'true');
+                } else {
+                    customBudgetInput.style.display = 'none';
+                    customBudgetInput.removeAttribute('required');
+                    customBudgetInput.value = ''; // 값 초기화
+                }
+            });
+
+            // 메시지 표시 함수
+            function showMessage(element, message, type = 'error') {
+                element.textContent = message;
+                element.style.display = 'block';
+                setTimeout(() => {
+                    element.style.display = 'none';
+                }, 5000); // 5초 후 사라짐
+            }
+
+            // 스피너 표시/숨기기 함수
+            function toggleSpinner(spinnerElement, show) {
+                spinnerElement.style.display = show ? 'inline-block' : 'none';
+            }
+
+            // 버튼 활성화/비활성화
+            function toggleButtons(disable) {
+                recommendBtn.disabled = disable;
+                // 저장 버튼은 생성된 계획이 있을 때만 활성화되도록
+                saveBtn.disabled = disable || !currentGeneratedPlan;
+            }
+
+            // 여행 계획 추천 버튼 클릭 이벤트
+            recommendBtn.addEventListener('click', async function () {
+                // 필수 입력 필드 유효성 검사
+                if (!destinationInput.value || !adultsInput.value || !travelStyleSelect.value || !travelDaysSelect.value || !budgetSelect.value || (budgetSelect.value === '직접 입력' && !customBudgetInput.value)) {
+                    showMessage(errorMessageDiv, '모든 필수 입력 필드를 채워주세요.', 'error');
+                    return;
+                }
+
+                toggleButtons(true); // 버튼 비활성화
+                toggleSpinner(recommendSpinner, true); // 스피너 표시
+                travelPlanOutput.innerHTML = '<p style="text-align: center; color: var(--light-text-color);">여행 계획을 생성 중입니다... 잠시만 기다려주세요.</p>';
+                errorMessageDiv.style.display = 'none';
+                infoMessageDiv.style.display = 'none';
+                saveBtn.disabled = true; // 새로운 추천 전에는 저장 버튼 비활성화
+
+                const formData = {
+                    destination: destinationInput.value,
+                    adults: parseInt(adultsInput.value),
+                    children: parseInt(childrenInput.value),
+                    travelStyle: travelStyleSelect.value,
+                    travelDays: travelDaysSelect.value,
+                    budget: budgetSelect.value === '직접 입력' ? customBudgetInput.value : budgetSelect.value,
+                };
+
+                const prompt = `
+                다음 정보를 바탕으로 여행 계획을 추천해주세요. 응답은 JSON 형식으로 해주세요.
+                {
+                    "accommodations": [
+                        {"name": "숙소1 이름", "description": "숙소1 설명"},
+                        {"name": "숙소2 이름", "description": "숙소2 설명"}
+                    ],
+                    "restaurants": [
+                        {"name": "맛집1 이름", "description": "맛집1 설명"},
+                        {"name": "맛집2 이름", "description": "맛집2 설명"}
+                    ],
+                    "touristCourses": [
+                        {"name": "관광지1 이름", "description": "관광지1 설명"},
+                        {"name": "관광지2 이름", "description": "관광지2 설명"}
+                    ]
+                }
+                숙소, 맛집, 관광 코스 각각 3개씩 추천해주세요. 각 항목에는 이름과 설명을 포함해주세요.
+                
+                여행할 나라/지역/도시: ${formData.destination}
+                성인 인원수: ${formData.adults}
+                아이 인원수: ${formData.children}
+                여행 스타일: ${formData.travelStyle}
+                여행 일수: ${formData.travelDays}
+                예산: ${formData.budget}
+                `;
+
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${GEMINI_API_KEY}`;
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [{
+                                    text: prompt
+                                }]
+                            }],
+                            generationConfig: {
+                                responseMimeType: "application/json",
+                                temperature: 0.7,
+                                topP: 0.95,
+                                topK: 64,
+                                maxOutputTokens: 8192,
+                                stopSequences: [],
+                            },
+                            safetySettings: [{
+                                category: "HARM_CATEGORY_HARASSMENT",
+                                threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                            }, {
+                                category: "HARASSMENT",
+                                threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                            }, {
+                                category: "HARM_CATEGORY_HATE_SPEECH",
+                                threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                            }, {
+                                category: "HATE_SPEECH",
+                                threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                            }, {
+                                category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                                threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                            }, {
+                                category: "SEXUALLY_EXPLICIT",
+                                threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                            }, {
+                                category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+                                threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                            }, {
+                                category: "DANGEROUS_CONTENT",
+                                threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                            }, ],
+                        }),
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(`API 오류: ${response.status} ${response.statusText} - ${JSON.stringify(errorData)}`);
+                    }
+
+                    const jsonResponse = await response.json();
+                    let parsedResponse;
+                    try {
+                        // Gemini API의 응답 구조에 따라 text 추출 및 JSON 파싱
+                        const responseText = jsonResponse.candidates[0].content.parts[0].text;
+                        parsedResponse = JSON.parse(responseText);
+                    } catch (parseError) {
+                        throw new Error(`Gemini API 응답 파싱 오류: ${parseError.message}. 원본 응답: ${JSON.stringify(jsonResponse)}`);
+                    }
+
+
+                    displayTravelPlan(parsedResponse);
+                    currentGeneratedPlan = {
+                        destination: formData.destination,
+                        adults: formData.adults,
+                        children: formData.children,
+                        travelStyle: formData.travelStyle,
+                        travelDays: formData.travelDays,
+                        budget: formData.budget,
+                        accommodations: parsedResponse.accommodations || [],
+                        restaurants: parsedResponse.restaurants || [],
+                        touristCourses: parsedResponse.touristCourses || [],
+                        Timestamp: new Date().toISOString(), // 저장 시간 기록
+                        UserID: "localUser" // 로컬 저장용 더미 UserID
+                    };
+                    saveBtn.disabled = false; // 성공적으로 계획 생성 시 저장 버튼 활성화
+                    showMessage(infoMessageDiv, '새로운 여행 계획이 생성되었습니다!', 'info');
+
+                } catch (error) {
+                    showMessage(errorMessageDiv, `여행 계획 생성 중 오류가 발생했습니다: ${error.message}`, 'error');
+                    travelPlanOutput.innerHTML = '<p style="text-align: center; color: var(--light-text-color);">여행 계획 생성에 실패했습니다.</p>';
+                    currentGeneratedPlan = null;
+                } finally {
+                    toggleButtons(false); // 버튼 활성화
+                    toggleSpinner(recommendSpinner, false); // 스피너 숨김
+                }
+            });
+
+            // 여행 계획 표시 함수
+            function displayTravelPlan(plan) {
+                let html = '';
+                if (plan.accommodations && plan.accommodations.length > 0) {
+                    html += '<h3>🏨 숙소 추천</h3><ul>';
+                    plan.accommodations.forEach(item => {
+                        html += `<li><strong>${item.name || '이름 없음'}</strong>: ${item.description || ''}</li>`;
+                    });
+                    html += '</ul>';
+                }
+                if (plan.restaurants && plan.restaurants.length > 0) {
+                    html += '<h3>🍽️ 맛집 추천</h3><ul>';
+                    plan.restaurants.forEach(item => {
+                        html += `<li><strong>${item.name || '이름 없음'}</strong>: ${item.description || ''}</li>`;
+                    });
+                    html += '</ul>';
+                }
+                if (plan.touristCourses && plan.touristCourses.length > 0) {
+                    html += '<h3>🗺️ 관광 코스 추천</h3><ul>';
+                    plan.touristCourses.forEach(item => {
+                        html += `<li><strong>${item.name || '이름 없음'}</strong>: ${item.description || ''}</li>`;
+                    });
+                    html += '</ul>';
+                }
+
+                if (html === '') {
+                    travelPlanOutput.innerHTML = '<p style="text-align: center; color: var(--light-text-color);">생성된 여행 계획이 없습니다.</p>';
+                } else {
+                    travelPlanOutput.innerHTML = html;
+                }
+            }
+
+            // 기록하기 (저장) 버튼 클릭 이벤트 - 로컬 스토리지 사용
+            saveBtn.addEventListener('click', function () {
+                if (!currentGeneratedPlan) {
+                    showMessage(errorMessageDiv, '먼저 여행 계획을 추천받아주세요!', 'error');
+                    return;
+                }
+
+                try {
+                    let savedPlans = JSON.parse(localStorage.getItem('travelPlans')) || [];
+                    savedPlans.push(currentGeneratedPlan);
+                    localStorage.setItem('travelPlans', JSON.stringify(savedPlans));
+                    showMessage(infoMessageDiv, '여행 계획이 성공적으로 로컬에 저장되었습니다.', 'info');
+                    loadSavedTravelPlans(); // 저장 후 목록 새로고침
+                    saveBtn.disabled = true; // 저장 후에는 다시 비활성화
+                } catch (e) {
+                    showMessage(errorMessageDiv, `여행 계획 저장 중 오류가 발생했습니다: ${e.message}`, 'error');
+                }
+            });
+
+            // 저장된 여행 계획 불러오기 (로컬 스토리지 사용)
+            function loadSavedTravelPlans() {
+                savedPlansList.innerHTML = ''; // 기존 목록 초기화
+                const savedPlans = JSON.parse(localStorage.getItem('travelPlans')) || [];
+
+                if (savedPlans.length === 0) {
+                    savedPlansList.innerHTML = '<p style="text-align: center; color: var(--light-text-color);">저장된 여행 계획이 없습니다.</p>';
+                    return;
+                }
+
+                savedPlans.forEach(plan => {
+                    const li = document.createElement('li');
+                    const timestamp = new Date(plan.Timestamp).toLocaleString('ko-KR');
+                    li.innerHTML = `
+                        <span class="plan-title">${plan.destination} (${plan.travelStyle}, ${plan.travelDays})</span>
+                        <span>${timestamp}</span>
+                    `;
+                    li.dataset.plan = JSON.stringify(plan); // 전체 계획 데이터를 data 속성에 저장
+                    li.addEventListener('click', function () {
+                        loadPlanToForm(JSON.parse(this.dataset.plan));
+                    });
+                    savedPlansList.appendChild(li);
+                });
+            }
+
+            // 저장된 계획을 입력 폼과 출력 영역에 로드
+            function loadPlanToForm(plan) {
+                destinationInput.value = plan.destination;
+                adultsInput.value = plan.adults;
+                childrenInput.value = plan.children;
+                travelStyleSelect.value = plan.travelStyle;
+                travelDaysSelect.value = plan.travelDays;
+                budgetSelect.value = ["100만원", "200만원", "300만원"].includes(plan.budget) ? plan.budget : "직접 입력";
+                if (budgetSelect.value === "직접 입력") {
+                    customBudgetInput.value = plan.budget;
+                    customBudgetInput.style.display = 'block';
+                } else {
+                    customBudgetInput.style.display = 'none';
+                    customBudgetInput.value = '';
+                }
+
+                const displayedPlan = {
+                    accommodations: plan.accommodations,
+                    restaurants: plan.restaurants,
+                    touristCourses: plan.touristCourses
+                };
+                displayTravelPlan(displayedPlan);
+                currentGeneratedPlan = { // 로드된 계획을 currentGeneratedPlan에 설정하여, 다시 저장할 수 있도록 함
+                    destination: plan.destination,
+                    adults: plan.adults,
+                    children: plan.children,
+                    travelStyle: plan.travelStyle,
+                    travelDays: plan.travelDays,
+                    budget: plan.budget,
+                    accommodations: plan.accommodations,
+                    restaurants: plan.restaurants,
+                    touristCourses: plan.touristCourses,
+                    Timestamp: plan.Timestamp,
+                    UserID: plan.UserID
+                };
+                saveBtn.disabled = true; // 로드된 계획은 이미 저장된 것이므로 저장 버튼 비활성화 (다시 저장하려면 수정 후 추천받아야 함)
+                showMessage(infoMessageDiv, '저장된 여행 계획이 로드되었습니다.', 'info');
+            }
+
+            // 초기 로드 시 저장된 여행 계획 불러오기
+            loadSavedTravelPlans();
+        });
+    </script>
+</body>
+
+</html>
